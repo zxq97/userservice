@@ -5,7 +5,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/registry/etcd"
 	"userservice/conf"
-	user_service "userservice/rpc/user/pb"
+	"userservice/rpc/user/pb"
 	"userservice/server"
 )
 
