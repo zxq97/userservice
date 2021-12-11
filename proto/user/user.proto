@@ -1,0 +1,101 @@
+syntax = "proto3";
+package user;
+option go_package = "rpc/user/pb;user_service";
+
+message UserInfo {
+  int64 uid = 1;
+  string nickname = 2;
+  int32 gender = 3;
+  string introduction = 4;
+}
+
+message BlackInfo {
+  int64 uid = 1;
+  int64 target_id = 2;
+  int32 black_type = 3;
+}
+
+message CollectionInfo {
+  int64 uid = 1;
+  int64 target_id = 2;
+}
+
+message BrowseInfo {
+  int64 uid = 1;
+  int64 to_uid = 2;
+}
+
+message UserInfoRequest {
+  int64 uid = 1;
+}
+
+message UserInfoResponse {
+  UserInfo userinfo = 1;
+}
+
+message UserInfoBatchRequest {
+  repeated int64 uids = 1;
+}
+
+message UserInfoBatchResponse {
+  map<int64, UserInfo> userinfos = 1;
+}
+
+message BlackRequest {
+  BlackInfo black_info = 1;
+}
+
+message EmptyResponse {
+}
+
+message CancelBlackRequest {
+  BlackInfo black_info = 1;
+}
+
+message CollectionRequest {
+  CollectionInfo collection_info = 1;
+}
+
+message CancelCollectionRequest {
+  CollectionInfo collection_info = 1;
+}
+
+message AddBrowseRequest {
+  BrowseInfo browse_info = 1;
+}
+
+message CreateUserRequest {
+  UserInfo userinfo = 1;
+}
+
+message BlackListRequest {
+  int64 uid = 1;
+  int32 black_type = 2;
+  int64 lastID = 3;
+  int64 offset = 4;
+}
+
+message FeedListRequest {
+  int64 uid = 1;
+  int64 lastID = 2;
+  int64 offset = 3;
+}
+
+message FeedListResponse {
+  repeated int64 target_ids = 1;
+  bool has_more = 2;
+}
+
+service UserServer {
+  rpc GetUserinfo(UserInfoRequest) returns (UserInfoResponse);
+  rpc GetBatchUserinfo(UserInfoBatchRequest) returns (UserInfoBatchResponse);
+  rpc GetHistoryBrowse(FeedListRequest) returns (FeedListResponse);
+  rpc GetBlackList(BlackListRequest) returns (FeedListResponse);
+  rpc GetCollectionList(FeedListRequest) returns (FeedListResponse);
+  rpc Black(BlackRequest) returns (EmptyResponse);
+  rpc CancelBlack(CancelBlackRequest) returns (EmptyResponse);
+  rpc Collection(CollectionRequest) returns (EmptyResponse);
+  rpc CancelCollection(CancelCollectionRequest) returns (EmptyResponse);
+  rpc AddBrowse(AddBrowseRequest) returns (EmptyResponse);
+  rpc CreateUser(CreateUserRequest) returns (EmptyResponse);
+}
