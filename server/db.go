@@ -15,7 +15,7 @@ func dbGetUser(ctx context.Context, uid int64) (*User, error) {
 
 func dbBatchGetUser(ctx context.Context, uids []int64) (map[int64]*User, error) {
 	users := []*User{}
-	err := dbCli.Model(&User{}).Where("uid in (?)", uids).Find(&users).Error
+	err := slaveCli.Model(&User{}).Where("uid in (?)", uids).Find(&users).Error
 	if err != nil {
 		log.Printf("ctx %v dbBatchGetUser uids %v err %v", ctx, uids, err)
 		return nil, err
@@ -37,9 +37,9 @@ func dbAddUser(ctx context.Context, user *User) error {
 
 func dbAddBlack(ctx context.Context, uid, targetID int64, blackType int32) error {
 	userBlack := &UserBlack{
-		UID: uid,
+		UID:           uid,
 		BlackTargetID: targetID,
-		BlackType: BlackTypeArticle,
+		BlackType:     BlackTypeArticle,
 	}
 	err := dbCli.Create(&userBlack).Error
 	if err != nil {
@@ -58,7 +58,7 @@ func dbDelBlack(ctx context.Context, uid, targetID int64, blackType int32) error
 
 func dbAddCollection(ctx context.Context, uid, targetID int64) error {
 	coll := &Collection{
-		UID: uid,
+		UID:      uid,
 		TargetID: targetID,
 	}
 	err := dbCli.Create(&coll).Error
@@ -78,7 +78,7 @@ func dbDelCollection(ctx context.Context, uid, targetID int64) error {
 
 func dbAddBrowse(ctx context.Context, uid, toUID int64) error {
 	history := &BrowseHistory{
-		UID: uid,
+		UID:   uid,
 		ToUID: toUID,
 	}
 	err := dbCli.Create(&history).Error
