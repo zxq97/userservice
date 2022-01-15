@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/go-redis/redis"
+	"userservice/global"
 	"userservice/rpc/user/pb"
 	"userservice/util/concurrent"
 )
@@ -130,7 +131,7 @@ func getRankByID(ctx context.Context, lastID, key string) (int64, error) {
 		if err == redis.Nil {
 			return 0, nil
 		}
-		excLog.Printf("ctx %v getRankByID key %v last_id %v err %v", ctx, key, lastID, err)
+		global.ExcLog.Printf("ctx %v getRankByID key %v last_id %v err %v", ctx, key, lastID, err)
 		return 0, err
 	}
 	return rank, nil
