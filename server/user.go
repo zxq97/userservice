@@ -116,13 +116,7 @@ func createUser(ctx context.Context, uid int64, gender int32, nickname, introduc
 		Introduction: introduction,
 	}
 	err := dbAddUser(ctx, user)
-	if err != nil {
-		return err
-	}
-	concurrent.Go(func() {
-		_ = cacheSetUser(ctx, user)
-	})
-	return nil
+	return err
 }
 
 func getRankByID(ctx context.Context, lastID, key string) (int64, error) {
