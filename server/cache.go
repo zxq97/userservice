@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-redis/redis"
-	"log"
 	"time"
+	"userservice/global"
 )
 
 const (
@@ -50,7 +50,7 @@ func cacheBatchGetUser(ctx context.Context, uids []int64) (map[int64]*User, []in
 		user := User{}
 		err = json.Unmarshal(v.Value, &user)
 		if err != nil {
-			log.Printf("ctx %v cacheBatchGetUser user %v unmarshal err %v", ctx, v.Value, err)
+			global.ExcLog.Printf("ctx %v cacheBatchGetUser user %v unmarshal err %v", ctx, v.Value, err)
 			continue
 		}
 		userMap[user.UID] = &user
@@ -79,7 +79,7 @@ func cacheSetUser(ctx context.Context, user *User) error {
 	}
 	err = mcCli.Set(&memcache.Item{Key: fmt.Sprintf(MCKeyUserinfo, user.UID), Value: buf, Expiration: MCKeyUserinfoTTl})
 	if err != nil {
-		log.Printf("ctx %v cacheSetUser user %v err %v", ctx, user, err)
+		global.ExcLog.Printf("ctx %v cacheSetUser user %v err %v", ctx, user, err)
 	}
 	return err
 }
@@ -88,12 +88,12 @@ func cacheBatchSetUser(ctx context.Context, userMap map[int64]*User) error {
 	for k, v := range userMap {
 		val, err := json.Marshal(v)
 		if err != nil {
-			log.Printf("ctx %v cacheBatchSetUser marshal user %v err %v", ctx, v, err)
+			global.ExcLog.Printf("ctx %v cacheBatchSetUser marshal user %v err %v", ctx, v, err)
 			continue
 		}
 		err = mcCli.Set(&memcache.Item{Key: fmt.Sprintf(MCKeyUserinfo, k), Value: val, Expiration: MCKeyUserinfoTTl})
 		if err != nil {
-			log.Printf("ctx %v cacheBatchSetUser set mc user %v err %v", ctx, val, err)
+			global.ExcLog.Printf("ctx %v cacheBatchSetUser set mc user %v err %v", ctx, val, err)
 			continue
 		}
 	}
@@ -107,7 +107,7 @@ func cacheBlack(ctx context.Context, uid, targetID int64, blackType int32) error
 	case BlackTypeArticle:
 		return blackArticle(ctx, uid, targetID)
 	}
-	log.Printf("ctx %v cacheBlack uid %v target_id %v black_type %v err", ctx, uid, targetID, blackType)
+	global.ExcLog.Printf("ctx %v cacheBlack uid %v target_id %v black_type %v err", ctx, uid, targetID, blackType)
 	return errors.New("black_type err")
 }
 
@@ -120,7 +120,7 @@ func blackPerson(ctx context.Context, uid, toUID int64) error {
 	pipe.ZAdd(sKey, redis.Z{Member: uid, Score: now})
 	_, err := pipe.Exec()
 	if err != nil {
-		log.Printf("ctx %v blackPerson uid %v to_uid %v err %v", ctx, uid, toUID, err)
+		global.ExcLog.Printf("ctx %v blackPerson uid %v to_uid %v err %v", ctx, uid, toUID, err)
 	}
 	return err
 }
@@ -130,7 +130,7 @@ func blackArticle(ctx context.Context, uid, articleID int64) error {
 	now := float64(time.Now().Unix())
 	err := redisCli.ZAdd(key, redis.Z{Member: articleID, Score: now}).Err()
 	if err != nil {
-		log.Printf("ctx %v blackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
+		global.ExcLog.Printf("ctx %v blackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
 	}
 	return err
 }
@@ -142,7 +142,7 @@ func cacheCancelBlack(ctx context.Context, uid, targetID int64, blackType int32)
 	case BlackTypeArticle:
 		return cancelBlackArticle(ctx, uid, targetID)
 	}
-	log.Printf("ctx %v cacheCancelBlack uid %v target_id %v black_type %v err", ctx, uid, targetID, blackType)
+	global.ExcLog.Printf("ctx %v cacheCancelBlack uid %v target_id %v black_type %v err", ctx, uid, targetID, blackType)
 	return errors.New("black_type err")
 }
 
@@ -154,7 +154,7 @@ func cancelBlackPerson(ctx context.Context, uid, toUID int64) error {
 	pipe.ZRem(sKey, uid)
 	_, err := pipe.Exec()
 	if err != nil {
-		log.Printf("ctx %v cancelBlackPerson uid %v target_id %v err %v", ctx, uid, toUID, err)
+		global.ExcLog.Printf("ctx %v cancelBlackPerson uid %v target_id %v err %v", ctx, uid, toUID, err)
 	}
 	return err
 }
@@ -163,7 +163,7 @@ func cancelBlackArticle(ctx context.Context, uid, articleID int64) error {
 	key := fmt.Sprintf(RedisKeyZBlackArticle, uid)
 	err := redisCli.ZRem(key, articleID).Err()
 	if err != nil {
-		log.Printf("ctx %v cancelBlackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
+		global.ExcLog.Printf("ctx %v cancelBlackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
 	}
 	return err
 }
@@ -172,7 +172,7 @@ func cacheDelCollection(ctx context.Context, uid int64) error {
 	key := fmt.Sprintf(RedisKeyZCollection, uid)
 	err := redisCli.Del(key).Err()
 	if err != nil {
-		log.Printf("ctx %v cacheDelCollection uid %v err %v", ctx, uid, err)
+		global.ExcLog.Printf("ctx %v cacheDelCollection uid %v err %v", ctx, uid, err)
 	}
 	return err
 }
@@ -181,7 +181,7 @@ func cacheDelBrowse(ctx context.Context, uid int64) error {
 	key := fmt.Sprintf(RedisKeyZBrowse, uid)
 	err := redisCli.Del(key).Err()
 	if err != nil {
-		log.Printf("ctx %v cacheDelBrowse uid %v err %v", ctx, uid, err)
+		global.ExcLog.Printf("ctx %v cacheDelBrowse uid %v err %v", ctx, uid, err)
 	}
 	return err
 }

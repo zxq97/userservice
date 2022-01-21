@@ -5,6 +5,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/registry/etcd"
 	"userservice/conf"
+	"userservice/global"
 	"userservice/rpc/user/pb"
 	"userservice/server"
 )
@@ -16,6 +17,15 @@ var (
 
 func main() {
 	userConf, err = conf.LoadYaml(conf.UserConfPath)
+	if err != nil {
+		panic(err)
+	}
+
+	global.InfoLog, err = conf.InitLog(userConf.InfoLog.Path)
+	if err != nil {
+		panic(err)
+	}
+	global.ExcLog, err = conf.InitLog(userConf.ExcLog.Path)
 	if err != nil {
 		panic(err)
 	}
