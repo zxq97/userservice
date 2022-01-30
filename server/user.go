@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"userservice/global"
 	"userservice/rpc/user/pb"
 	"userservice/util/concurrent"

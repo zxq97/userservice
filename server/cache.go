@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"time"
 	"userservice/global"
 )
@@ -116,9 +116,9 @@ func blackPerson(ctx context.Context, uid, toUID int64) error {
 	sKey := fmt.Sprintf(RedisKeyZBlackUser, toUID)
 	now := float64(time.Now().Unix())
 	pipe := redisCli.Pipeline()
-	pipe.ZAdd(key, redis.Z{Member: toUID, Score: now})
-	pipe.ZAdd(sKey, redis.Z{Member: uid, Score: now})
-	_, err := pipe.Exec()
+	pipe.ZAdd(ctx, key, &redis.Z{Member: toUID, Score: now})
+	pipe.ZAdd(ctx, sKey, &redis.Z{Member: uid, Score: now})
+	_, err := pipe.Exec(ctx)
 	if err != nil {
 		global.ExcLog.Printf("ctx %v blackPerson uid %v to_uid %v err %v", ctx, uid, toUID, err)
 	}
@@ -128,7 +128,7 @@ func blackPerson(ctx context.Context, uid, toUID int64) error {
 func blackArticle(ctx context.Context, uid, articleID int64) error {
 	key := fmt.Sprintf(RedisKeyZBlackArticle, uid)
 	now := float64(time.Now().Unix())
-	err := redisCli.ZAdd(key, redis.Z{Member: articleID, Score: now}).Err()
+	err := redisCli.ZAdd(ctx, key, &redis.Z{Member: articleID, Score: now}).Err()
 	if err != nil {
 		global.ExcLog.Printf("ctx %v blackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
 	}
@@ -150,9 +150,9 @@ func cancelBlackPerson(ctx context.Context, uid, toUID int64) error {
 	key := fmt.Sprintf(RedisKeyZBlackUser, uid)
 	sKey := fmt.Sprintf(RedisKeyZBlackUser, toUID)
 	pipe := redisCli.Pipeline()
-	pipe.ZRem(key, toUID)
-	pipe.ZRem(sKey, uid)
-	_, err := pipe.Exec()
+	pipe.ZRem(ctx, key, toUID)
+	pipe.ZRem(ctx, sKey, uid)
+	_, err := pipe.Exec(ctx)
 	if err != nil {
 		global.ExcLog.Printf("ctx %v cancelBlackPerson uid %v target_id %v err %v", ctx, uid, toUID, err)
 	}
@@ -161,7 +161,7 @@ func cancelBlackPerson(ctx context.Context, uid, toUID int64) error {
 
 func cancelBlackArticle(ctx context.Context, uid, articleID int64) error {
 	key := fmt.Sprintf(RedisKeyZBlackArticle, uid)
-	err := redisCli.ZRem(key, articleID).Err()
+	err := redisCli.ZRem(ctx, key, articleID).Err()
 	if err != nil {
 		global.ExcLog.Printf("ctx %v cancelBlackArticle uid %v article_id %v err %v", ctx, uid, articleID, err)
 	}
@@ -170,7 +170,7 @@ func cancelBlackArticle(ctx context.Context, uid, articleID int64) error {
 
 func cacheDelCollection(ctx context.Context, uid int64) error {
 	key := fmt.Sprintf(RedisKeyZCollection, uid)
-	err := redisCli.Del(key).Err()
+	err := redisCli.Del(ctx, key).Err()
 	if err != nil {
 		global.ExcLog.Printf("ctx %v cacheDelCollection uid %v err %v", ctx, uid, err)
 	}
@@ -179,7 +179,7 @@ func cacheDelCollection(ctx context.Context, uid int64) error {
 
 func cacheDelBrowse(ctx context.Context, uid int64) error {
 	key := fmt.Sprintf(RedisKeyZBrowse, uid)
-	err := redisCli.Del(key).Err()
+	err := redisCli.Del(ctx, key).Err()
 	if err != nil {
 		global.ExcLog.Printf("ctx %v cacheDelBrowse uid %v err %v", ctx, uid, err)
 	}
