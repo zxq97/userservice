@@ -120,7 +120,7 @@ func createUser(ctx context.Context, uid int64, gender int32, nickname, introduc
 }
 
 func getRankByID(ctx context.Context, lastID, key string) (int64, error) {
-	rank, err := redisCli.ZRank(key, lastID).Result()
+	rank, err := redisCli.ZRank(ctx, key, lastID).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, nil
